@@ -40,8 +40,7 @@ module.exports = {
     root: __dirname,
     htmlPath: {
         app: '/app/app_entry_point.' + env + '.html',
-        demo: '/app/demo_entry_point.' + env + '.html',
-        home: '/app/home_entry_point.html',
+        home: '/app/signin_entry_point.html',
         login: '/app/signin_entry_point.html',
         reset: '/app/reset_entry_point.html'
     },
