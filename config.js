@@ -44,5 +44,6 @@ module.exports = {
         login: '/app/signin_entry_point.html',
         reset: '/app/reset_entry_point.html'
     },
-    htmlCache: {}
+    htmlCache: {},
+    enableSignup: true
 };

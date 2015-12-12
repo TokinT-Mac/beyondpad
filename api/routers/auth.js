@@ -135,21 +135,21 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.get(
-    '/auth/microsoft/token', 
+    '/auth/microsoft/token',
     function (req, res, next) {
         req.query.access_token = req.headers['auth-provider-token'];
         next();
-    }, 
+    },
     passport.authenticate('windows-live-token'),
     sync.handshake
 );
 
 app.get(
-    '/auth/google/token', 
+    '/auth/google/token',
     function (req, res, next) {
         req.query.access_token = req.headers['auth-provider-token'];
         next();
-    }, 
+    },
     passport.authenticate('google-token'),
     sync.handshake
 );
@@ -159,7 +159,7 @@ app.get(
     function (req, res, next) {
         req.query.access_token = req.headers['auth-provider-token'];
         next();
-    }, 
+    },
     passport.authenticate('facebook-token'),
     sync.handshake
 );
@@ -171,7 +171,7 @@ app.get(
         req.query.oauth_token_secret = req.headers['auth-provider-token-secret'];
         req.query.user_id = req.headers['auth-provider-user-id'];
         next();
-    }, 
+    },
     passport.authenticate('twitter-token'),
     sync.handshake
 );
@@ -216,41 +216,45 @@ app.post('/auth/local/signin',
 );
 
 app.post('/auth/local/signup', function (req, res, next) {
-    Account.findOne({ '_profile.local.id': req.body.username }, function (err, account) {
-        if (!account) {
-            bcrypt.hash(req.body.password, 8, function (err, hash) {
-                if (err) {
-                    next(err);
-                } else {
-                    var profile = {
-                        provider: 'local',
-                        emails: [{ value: req.body.username }],
-                        id: req.body.username,
-                        _json: {
-                            hash: hash
-                        }
-                    };
-                    
-                    Account.getAccountId(profile, function (err, account) {
-                        if (err) {
-                            next(err);
-                        } else {
-                            passport.authenticate('local', function (err, user) {
-                                if (err) { next(err); }
-                                if (!user) { res.send(false); }
-                                req.login(user, function (err) {
-                                    if (err) { return next(err); }
-                                    return res.send(true);
-                                });
-                            })(req, res, next);
-                        }
-                    });
-                }
-            });
-        } else {
-            return res.send(false);
-        }
-    });
+    if(config.enableSignup) {
+        Account.findOne({ '_profile.local.id': req.body.username }, function (err, account) {
+            if (!account) {
+                bcrypt.hash(req.body.password, 8, function (err, hash) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        var profile = {
+                            provider: 'local',
+                            emails: [{ value: req.body.username }],
+                            id: req.body.username,
+                            _json: {
+                                hash: hash
+                            }
+                        };
+
+                        Account.getAccountId(profile, function (err, account) {
+                            if (err) {
+                                next(err);
+                            } else {
+                                passport.authenticate('local', function (err, user) {
+                                    if (err) { next(err); }
+                                    if (!user) { res.send(false); }
+                                    req.login(user, function (err) {
+                                        if (err) { return next(err); }
+                                        return res.send(true);
+                                    });
+                                })(req, res, next);
+                            }
+                        });
+                    }
+                });
+            } else {
+                return res.send(false);
+            }
+        });
+    } else {
+        return res.send(false);
+    }
 });
 
 app.post('/auth/local/reset', function (req, res, next) {
@@ -306,7 +310,7 @@ var sendPasswordResetEmail = function (email, resetId, callback) {
         text: 'Folow the link to reset Beyondpad password ' + url,
         html: '<span>Folow the link to reset Beyondpad password <a href="' + url + '">' + url + '</a></span>'
     };
-    
+
     transporter.sendMail(mailOptions, callback);
 };
 
@@ -334,7 +338,7 @@ app.post('/reset/:resetId', function (req, res, next) {
                             '_profile.local.json.resetId': null,
                             '_profile.local.json.hash': hash,
                         }
-                        
+
                         Account.update({ _id: account._id }, update, null, function (err) {
                             if (err) {
                                 return next(err);
