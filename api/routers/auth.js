@@ -253,7 +253,7 @@ app.post('/auth/local/signup', function (req, res, next) {
             }
         });
     } else {
-        return res.send(false);
+        return res.status(403);
     }
 });
 
